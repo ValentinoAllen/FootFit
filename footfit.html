@@ -1,0 +1,1682 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>FootFit — Ukur Kakimu</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;0,9..144,800;0,9..144,900;1,9..144,500&family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap"
+    rel="stylesheet" />
+  <style>
+    :root {
+      --cream: #F5EFE4;
+      --cream-2: #EBE3D2;
+      --paper: #FBF7EE;
+      --ink: #1A1814;
+      --ink-2: #3C362B;
+      --muted: #7A7166;
+      --terracotta: #D26A4C;
+      --terracotta-dark: #B5532F;
+      --forest: #2D4A36;
+      --forest-2: #1E3325;
+      --butter: #F4C95D;
+      --line: #1A1814;
+      --shadow-hard: 4px 4px 0 var(--ink);
+      --shadow-soft: 0 24px 40px -20px rgba(26, 24, 20, 0.25);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html,
+    body {
+      height: 100%;
+    }
+
+    body {
+      font-family: 'Geist', -apple-system, sans-serif;
+      background: #2A2620;
+      color: var(--ink);
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+      overflow-x: hidden;
+    }
+
+    /* Phone frame */
+    .phone {
+      width: 100%;
+      max-width: 412px;
+      height: min(92vh, 880px);
+      background: var(--paper);
+      border-radius: 44px;
+      border: 2px solid var(--ink);
+      box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.5), 0 0 0 8px #1A1814, 0 0 0 10px #3C362B;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Status bar */
+    .status-bar {
+      height: 48px;
+      padding: 14px 28px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--ink);
+      z-index: 10;
+      flex-shrink: 0;
+    }
+
+    .status-bar .right {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .status-bar svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    /* Screen container */
+    .screens {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .screen {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateX(20px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .screen.active {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateX(0);
+    }
+
+    .screen::-webkit-scrollbar {
+      display: none;
+    }
+
+    /* ===== Typography ===== */
+    .eyebrow {
+      font-family: 'Geist Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--terracotta);
+      font-weight: 500;
+    }
+
+    h1.display {
+      font-family: 'Fraunces', serif;
+      font-weight: 700;
+      font-size: 42px;
+      line-height: 0.95;
+      letter-spacing: -0.03em;
+      color: var(--ink);
+    }
+
+    h1.display em {
+      font-style: italic;
+      font-weight: 500;
+      color: var(--terracotta);
+    }
+
+    h2.title {
+      font-family: 'Fraunces', serif;
+      font-weight: 600;
+      font-size: 28px;
+      line-height: 1;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+    }
+
+    .body-text {
+      font-size: 15px;
+      line-height: 1.5;
+      color: var(--ink-2);
+    }
+
+    .micro {
+      font-family: 'Geist Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    /* ===== Buttons ===== */
+    .btn {
+      appearance: none;
+      border: 2px solid var(--ink);
+      background: var(--ink);
+      color: var(--paper);
+      padding: 18px 24px;
+      border-radius: 100px;
+      font-family: 'Geist', sans-serif;
+      font-weight: 600;
+      font-size: 16px;
+      letter-spacing: -0.01em;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      box-shadow: var(--shadow-hard);
+      width: 100%;
+    }
+
+    .btn:active {
+      transform: translate(2px, 2px);
+      box-shadow: 2px 2px 0 var(--ink);
+    }
+
+    .btn.terracotta {
+      background: var(--terracotta);
+      border-color: var(--ink);
+    }
+
+    .btn.ghost {
+      background: transparent;
+      color: var(--ink);
+      box-shadow: none;
+    }
+
+    .btn.ghost:active {
+      transform: none;
+    }
+
+    /* ===== SCREEN 1: PANDUAN ===== */
+    #screen-panduan {
+      padding: 0 28px 32px;
+    }
+
+    .hero-art {
+      position: relative;
+      margin: 8px -28px 24px;
+      height: 280px;
+      background: var(--cream);
+      border-bottom: 2px solid var(--ink);
+      overflow: hidden;
+    }
+
+    .hero-art::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        radial-gradient(circle at 1px 1px, rgba(26, 24, 20, 0.18) 1px, transparent 0);
+      background-size: 14px 14px;
+      opacity: 0.6;
+    }
+
+    /* Foot illustration */
+    .foot-illo {
+      position: absolute;
+      left: 50%;
+      bottom: 0;
+      transform: translateX(-50%);
+      width: 280px;
+      height: 240px;
+    }
+
+    .badge-rotate {
+      position: absolute;
+      top: 24px;
+      right: 24px;
+      width: 92px;
+      height: 92px;
+      background: var(--butter);
+      border: 2px solid var(--ink);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      transform: rotate(-12deg);
+      box-shadow: var(--shadow-hard);
+      animation: wobble 4s ease-in-out infinite;
+    }
+
+    @keyframes wobble {
+
+      0%,
+      100% {
+        transform: rotate(-12deg);
+      }
+
+      50% {
+        transform: rotate(-6deg);
+      }
+    }
+
+    .badge-rotate .num {
+      font-family: 'Fraunces', serif;
+      font-weight: 700;
+      font-size: 32px;
+      line-height: 0.9;
+    }
+
+    .badge-rotate .lbl {
+      font-family: 'Geist Mono', monospace;
+      font-size: 8px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    .corner-tag {
+      position: absolute;
+      bottom: 16px;
+      left: 16px;
+      background: var(--paper);
+      border: 2px solid var(--ink);
+      padding: 6px 12px;
+      font-family: 'Geist Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      transform: rotate(-2deg);
+    }
+
+    .panduan-header {
+      margin-bottom: 32px;
+    }
+
+    .panduan-header .eyebrow {
+      margin-bottom: 12px;
+    }
+
+    .panduan-header p {
+      margin-top: 14px;
+    }
+
+    .steps {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      margin-bottom: 28px;
+      border-top: 1px solid rgba(26, 24, 20, 0.15);
+    }
+
+    .step {
+      display: grid;
+      grid-template-columns: 56px 1fr auto;
+      align-items: center;
+      gap: 16px;
+      padding: 18px 0;
+      border-bottom: 1px solid rgba(26, 24, 20, 0.15);
+    }
+
+    .step-num {
+      font-family: 'Fraunces', serif;
+      font-style: italic;
+      font-weight: 500;
+      font-size: 34px;
+      color: var(--terracotta);
+      line-height: 1;
+    }
+
+    .step-body h3 {
+      font-family: 'Geist', sans-serif;
+      font-weight: 600;
+      font-size: 15px;
+      margin-bottom: 2px;
+      letter-spacing: -0.01em;
+    }
+
+    .step-body p {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .step-icon {
+      width: 36px;
+      height: 36px;
+      border: 1.5px solid var(--ink);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: var(--cream);
+    }
+
+    .step-icon svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    /* ===== SCREEN 2: KAMERA ===== */
+    #screen-kamera {
+      background: var(--ink);
+      color: var(--paper);
+    }
+
+    #screen-kamera .status-bar,
+    #screen-kamera-wrap .status-bar {
+      color: var(--paper);
+    }
+
+    .kamera-top {
+      padding: 16px 24px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .icon-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(245, 239, 228, 0.3);
+      background: rgba(245, 239, 228, 0.06);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      color: var(--paper);
+    }
+
+    .icon-btn svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .kamera-label {
+      font-family: 'Geist Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--paper);
+      opacity: 0.7;
+    }
+
+    .viewfinder {
+      flex: 1;
+      position: relative;
+      margin: 8px 20px;
+      border-radius: 24px;
+      overflow: hidden;
+      background:
+        radial-gradient(ellipse at 50% 60%, #3C362B 0%, #1A1814 100%);
+      border: 1px solid rgba(245, 239, 228, 0.15);
+    }
+
+    /* Mock scene */
+    .mock-scene {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+    }
+
+    .mock-floor {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(180deg, #3a3328 0%, #2a2419 100%);
+      background-image:
+        repeating-linear-gradient(100deg,
+          transparent 0,
+          transparent 28px,
+          rgba(245, 239, 228, 0.04) 28px,
+          rgba(245, 239, 228, 0.04) 30px);
+    }
+
+    .mock-card {
+      position: absolute;
+      top: 45%;
+      right: 6%;
+      width: 90px;
+      height: 56px;
+      background: linear-gradient(135deg, #F5EFE4, #D9D0BD);
+      border-radius: 6px;
+      transform: perspective(400px) rotateX(10deg);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+    }
+
+    .mock-card::before {
+      content: 'BANK';
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      font-family: 'Geist Mono', monospace;
+      font-size: 7px;
+      color: var(--ink);
+      letter-spacing: 0.1em;
+    }
+
+    .mock-card::after {
+      content: '';
+      position: absolute;
+      bottom: 8px;
+      left: 8px;
+      width: 18px;
+      height: 14px;
+      background: linear-gradient(135deg, #d4af37, #b8941f);
+      border-radius: 3px;
+    }
+
+    .mock-foot {
+      position: relative;
+      width: 170px;
+      height: 260px;
+      margin-top: 30px;
+      margin-left: -30px;
+    }
+
+    /* Detection brackets */
+    .bracket {
+      position: absolute;
+      width: 28px;
+      height: 28px;
+      border: 2.5px solid var(--terracotta);
+    }
+
+    .bracket.tl {
+      top: 12px;
+      left: 12px;
+      border-right: none;
+      border-bottom: none;
+    }
+
+    .bracket.tr {
+      top: 12px;
+      right: 12px;
+      border-left: none;
+      border-bottom: none;
+    }
+
+    .bracket.bl {
+      bottom: 12px;
+      left: 12px;
+      border-right: none;
+      border-top: none;
+    }
+
+    .bracket.br {
+      bottom: 12px;
+      right: 12px;
+      border-left: none;
+      border-top: none;
+    }
+
+    .scan-line {
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--terracotta), transparent);
+      box-shadow: 0 0 12px var(--terracotta);
+      animation: scan 2.6s ease-in-out infinite;
+    }
+
+    @keyframes scan {
+
+      0%,
+      100% {
+        top: 12%;
+      }
+
+      50% {
+        top: 86%;
+      }
+    }
+
+    .detect-pill {
+      position: absolute;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(245, 239, 228, 0.95);
+      color: var(--ink);
+      padding: 10px 18px;
+      border-radius: 100px;
+      font-family: 'Geist Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      backdrop-filter: blur(8px);
+    }
+
+    .dot-pulse {
+      width: 8px;
+      height: 8px;
+      background: #4ade80;
+      border-radius: 50%;
+      animation: pulse 1.4s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 0.5;
+        transform: scale(0.8);
+      }
+    }
+
+    .kamera-bottom {
+      padding: 24px 32px 36px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .shutter-wrap {
+      width: 84px;
+      height: 84px;
+      border-radius: 50%;
+      border: 2px solid var(--paper);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .shutter {
+      width: 68px;
+      height: 68px;
+      border-radius: 50%;
+      background: var(--terracotta);
+      border: none;
+      cursor: pointer;
+      transition: transform 0.1s ease;
+    }
+
+    .shutter:active {
+      transform: scale(0.92);
+    }
+
+    .kamera-side-btn {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(245, 239, 228, 0.3);
+      background: rgba(245, 239, 228, 0.06);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      color: var(--paper);
+    }
+
+    .kamera-side-btn svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    /* ===== SCREEN 3: LOADING ===== */
+    #screen-loading {
+      padding: 0 32px;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .loading-inner {
+      margin: auto;
+      text-align: center;
+      width: 100%;
+    }
+
+    .loading-art {
+      width: 200px;
+      height: 200px;
+      margin: 0 auto 36px;
+      position: relative;
+    }
+
+    .loading-art .ring {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 2px solid rgba(26, 24, 20, 0.12);
+    }
+
+    .loading-art .ring.spin {
+      border-top-color: var(--terracotta);
+      border-right-color: var(--terracotta);
+      animation: spin 1.6s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .loading-art .inner-circle {
+      position: absolute;
+      inset: 30px;
+      border-radius: 50%;
+      background: var(--cream);
+      border: 2px solid var(--ink);
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+
+    .loading-art .foot-mini {
+      width: 92px;
+      height: 138px;
+    }
+
+    .loading-art .scan-bar {
+      position: absolute;
+      left: 8%;
+      right: 8%;
+      height: 2px;
+      background: var(--terracotta);
+      box-shadow: 0 0 10px var(--terracotta), 0 0 20px rgba(210, 106, 76, 0.5);
+      border-radius: 2px;
+      animation: scan-foot 2.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    }
+
+    @keyframes scan-foot {
+      0% {
+        top: 12%;
+        opacity: 0;
+      }
+
+      8% {
+        opacity: 1;
+      }
+
+      50% {
+        top: 88%;
+        opacity: 1;
+      }
+
+      58% {
+        opacity: 0;
+      }
+
+      100% {
+        top: 12%;
+        opacity: 0;
+      }
+    }
+
+    .loading-steps {
+      list-style: none;
+      text-align: left;
+      margin-top: 32px;
+      background: var(--cream);
+      border: 2px solid var(--ink);
+      border-radius: 24px;
+      padding: 8px 4px;
+    }
+
+    .loading-step {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 20px;
+      font-size: 14px;
+      color: var(--muted);
+      transition: color 0.3s ease;
+      position: relative;
+    }
+
+    .loading-step+.loading-step::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 20px;
+      right: 20px;
+      height: 1px;
+      background: rgba(26, 24, 20, 0.1);
+    }
+
+    .loading-step .check {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 1.5px solid currentColor;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      font-size: 12px;
+    }
+
+    .loading-step .check svg {
+      width: 12px;
+      height: 12px;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .loading-step.active {
+      color: var(--ink);
+      font-weight: 500;
+    }
+
+    .loading-step.active .check {
+      background: var(--terracotta);
+      border-color: var(--terracotta);
+      color: var(--paper);
+    }
+
+    .loading-step.active .check svg {
+      opacity: 1;
+    }
+
+    .loading-step.current {
+      color: var(--ink);
+      font-weight: 500;
+    }
+
+    .loading-step.current .check {
+      border-color: var(--ink);
+      position: relative;
+    }
+
+    .loading-step.current .check::after {
+      content: '';
+      position: absolute;
+      inset: 4px;
+      border-radius: 50%;
+      background: var(--ink);
+      animation: pulse 1s ease-in-out infinite;
+    }
+
+    /* ===== SCREEN 4: HASIL ===== */
+    #screen-hasil {
+      padding-bottom: 24px;
+    }
+
+    .hasil-top {
+      padding: 0 24px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .hasil-icon-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 1.5px solid var(--ink);
+      background: var(--paper);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+    }
+
+    .hasil-hero {
+      margin: 0 24px 16px;
+      padding: 22px 24px 24px;
+      background: var(--forest);
+      color: var(--paper);
+      border: 2px solid var(--ink);
+      border-radius: 28px;
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .hasil-hero::before {
+      content: '';
+      position: absolute;
+      top: -40px;
+      right: -40px;
+      width: 140px;
+      height: 140px;
+      background: var(--butter);
+      border-radius: 50%;
+      opacity: 0.18;
+    }
+
+    .hasil-hero .eyebrow {
+      color: var(--butter);
+      margin-bottom: 10px;
+    }
+
+    .hasil-hero h2 {
+      font-family: 'Fraunces', serif;
+      font-weight: 600;
+      font-size: 26px;
+      line-height: 1.1;
+      margin-bottom: 10px;
+      letter-spacing: -0.02em;
+    }
+
+    .hasil-hero h2 em {
+      font-style: italic;
+      color: var(--butter);
+    }
+
+    .hasil-hero .subtitle {
+      font-size: 13px;
+      opacity: 0.85;
+      line-height: 1.45;
+      position: relative;
+      z-index: 1;
+    }
+
+    .preview-card {
+      margin: 0 24px 20px;
+      background: var(--cream);
+      border: 2px solid var(--ink);
+      border-radius: 24px;
+      overflow: hidden;
+      flex-shrink: 0;
+      min-height: 260px;
+    }
+
+    .preview-img {
+      height: 260px;
+      background:
+        radial-gradient(ellipse at center, rgba(210, 106, 76, 0.15) 0%, transparent 60%),
+        var(--cream-2);
+      position: relative;
+      display: grid;
+      place-items: center;
+      border-bottom: 2px solid var(--ink);
+    }
+
+    .preview-img svg.foot-shape {
+      width: 150px;
+      height: 238px;
+    }
+
+    .preview-meta {
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: 'Geist Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .preview-meta .live-tag {
+      background: var(--terracotta);
+      color: var(--paper);
+      padding: 3px 8px;
+      border-radius: 100px;
+      font-weight: 500;
+    }
+
+    .metrics {
+      margin: 0 24px 20px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .metric {
+      background: var(--paper);
+      border: 2px solid var(--ink);
+      border-radius: 20px;
+      padding: 16px 18px;
+      position: relative;
+    }
+
+    .metric .label {
+      font-family: 'Geist Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .metric .value {
+      font-family: 'Fraunces', serif;
+      font-weight: 600;
+      font-size: 30px;
+      line-height: 1;
+      letter-spacing: -0.02em;
+    }
+
+    .metric .unit {
+      font-family: 'Geist', sans-serif;
+      font-weight: 400;
+      font-size: 14px;
+      color: var(--muted);
+      margin-left: 4px;
+    }
+
+    .metric.ratio {
+      grid-column: 1 / -1;
+      background: var(--butter);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .metric.ratio .right-side {
+      text-align: right;
+    }
+
+    .metric.ratio .tag {
+      display: inline-block;
+      background: var(--ink);
+      color: var(--paper);
+      padding: 5px 11px;
+      border-radius: 100px;
+      font-family: 'Geist Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-top: 6px;
+    }
+
+    .sizes {
+      margin: 0 24px 20px;
+      background: var(--paper);
+      border: 2px solid var(--ink);
+      border-radius: 24px;
+      padding: 20px;
+    }
+
+    .sizes h3 {
+      font-family: 'Fraunces', serif;
+      font-weight: 600;
+      font-size: 18px;
+      margin-bottom: 4px;
+      letter-spacing: -0.01em;
+    }
+
+    .sizes .sub {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+
+    .size-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .size-box {
+      border: 1.5px solid rgba(26, 24, 20, 0.2);
+      border-radius: 14px;
+      padding: 12px 8px;
+      text-align: center;
+    }
+
+    .size-box .region {
+      font-family: 'Geist Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .size-box .size {
+      font-family: 'Fraunces', serif;
+      font-weight: 600;
+      font-size: 20px;
+      color: var(--ink);
+    }
+
+    .actions {
+      margin: 0 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* Home indicator */
+    .home-indicator {
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 134px;
+      height: 5px;
+      background: var(--ink);
+      border-radius: 100px;
+      opacity: 0.5;
+      z-index: 20;
+    }
+
+    #screen-kamera~.home-indicator,
+    body.kamera .home-indicator {
+      background: var(--paper);
+    }
+
+    /* Reveal animations */
+    .reveal {
+      opacity: 0;
+      transform: translateY(12px);
+      animation: reveal 0.5s ease forwards;
+    }
+
+    @keyframes reveal {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .d1 {
+      animation-delay: 0.05s;
+    }
+
+    .d2 {
+      animation-delay: 0.12s;
+    }
+
+    .d3 {
+      animation-delay: 0.19s;
+    }
+
+    .d4 {
+      animation-delay: 0.26s;
+    }
+
+    .d5 {
+      animation-delay: 0.33s;
+    }
+
+    .d6 {
+      animation-delay: 0.4s;
+    }
+
+    .d7 {
+      animation-delay: 0.47s;
+    }
+
+    /* File input hidden */
+    input[type="file"] {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Reusable foot illustration library -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <!-- Sole-view right foot. Toes step down: BIG (right) → 2 → 3 → 4 → PINKY (left).
+         Colors via CSS custom props:
+         --foot-fill (skin base), --foot-shadow (arch shadow), --foot-crease (toe creases) -->
+      <symbol id="foot-sole" viewBox="0 0 240 360">
+        <image href="imgs/foot.png" x="20" y="20" width="200" height="320" preserveAspectRatio="xMidYMid meet"
+          opacity="0.4" />
+      </symbol>
+    </defs>
+  </svg>
+
+  <div class="phone">
+    <!-- Status bar (changes color with screen) -->
+    <div class="status-bar" id="statusBar">
+      <span>9:41</span>
+      <div class="right">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M2 11h2v6H2v-6zm5-3h2v9H7V8zm5-3h2v12h-2V5zm5-2h2v14h-2V3z" />
+        </svg>
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 4C7.31 4 3.07 5.9 0 8.98L12 21 24 8.98C20.93 5.9 16.69 4 12 4z" />
+        </svg>
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <rect x="2" y="7" width="18" height="10" rx="2" stroke="currentColor" stroke-width="1.5" fill="none" />
+          <rect x="20" y="10" width="2" height="4" fill="currentColor" />
+          <rect x="4" y="9" width="13" height="6" fill="currentColor" />
+        </svg>
+      </div>
+    </div>
+
+    <div class="screens">
+
+      <!-- ============================================ -->
+      <!-- SCREEN 1: PANDUAN -->
+      <!-- ============================================ -->
+      <div class="screen active" id="screen-panduan">
+        <div class="hero-art">
+          <div class="badge-rotate">
+            <div>
+              <div class="num">02</div>
+              <div class="lbl">Menit</div>
+            </div>
+          </div>
+          <div class="corner-tag">v1.0 · BETA</div>
+          <svg class="foot-illo" viewBox="0 0 280 240" fill="none">
+            <!-- Ground shadow -->
+            <ellipse cx="100" cy="232" rx="65" ry="6" fill="#1A1814" opacity="0.12" />
+
+            <!-- Right foot, sole view, light skin -->
+            <use href="#foot-sole" x="30" y="20" width="140" height="210" />
+
+            <!-- Reference card beside foot at mid-height -->
+            <g transform="translate(195 110)">
+              <rect width="64" height="40" rx="5" fill="#F4C95D" stroke="#1A1814" stroke-width="2" />
+              <rect x="5" y="22" width="13" height="10" rx="1.5" fill="#1A1814" opacity="0.55" />
+              <line x1="25" y1="26" x2="56" y2="26" stroke="#1A1814" stroke-width="1.2" opacity="0.4" />
+              <line x1="25" y1="31" x2="48" y2="31" stroke="#1A1814" stroke-width="1.2" opacity="0.4" />
+              <text x="5" y="13" font-family="Geist Mono, monospace" font-size="6" fill="#1A1814"
+                letter-spacing="0.8">REFERENSI</text>
+            </g>
+
+            <!-- Length measurement axis on left -->
+            <line x1="22" y1="20" x2="22" y2="230" stroke="#1A1814" stroke-width="1.5" stroke-dasharray="3 3" />
+            <line x1="17" y1="20" x2="27" y2="20" stroke="#1A1814" stroke-width="1.5" />
+            <line x1="17" y1="230" x2="27" y2="230" stroke="#1A1814" stroke-width="1.5" />
+            <text x="14" y="135" font-family="Geist Mono, monospace" font-size="9" fill="#1A1814"
+              transform="rotate(-90 14 135)" letter-spacing="1">PANJANG</text>
+          </svg>
+        </div>
+
+        <div class="panduan-header reveal d1">
+          <div class="eyebrow">Selamat datang di FootFit</div>
+        </div>
+
+        <h1 class="display reveal d2" style="margin-bottom: 14px;">Ukur kakimu<br>dalam
+          <em>hitungan</em><br><em>detik.</em>
+        </h1>
+
+        <p class="body-text reveal d3" style="margin-bottom: 28px;">Cuma butuh kartu (KTP, ATM, atau e‑money) sebagai
+          referensi. Tanpa penggaris, tanpa ribet.</p>
+
+        <ul class="steps reveal d4">
+          <li class="step">
+            <div class="step-num">01</div>
+            <div class="step-body">
+              <h3>Sentuhkan tumit kaki ke dinding</h3>
+              <p>Cari dinding rata, lalu pastikan tumit Anda menempel sepenuhnya pada dinding.</p>
+            </div>
+            <div class="step-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2L3 9h6v13h6V9h6L12 2z" transform="rotate(180 12 12)" />
+              </svg>
+            </div>
+          </li>
+          <li class="step">
+            <div class="step-num">02</div>
+            <div class="step-body">
+              <h3>Taruh kartu di samping kaki</h3>
+              <p>Posisikan kartu sejajar di samping, beri sedikit jarak (jangan menumpuk).</p>
+            </div>
+            <div class="step-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="6" width="18" height="12" rx="2" />
+                <line x1="3" y1="10" x2="21" y2="10" />
+              </svg>
+            </div>
+          </li>
+          <li class="step">
+            <div class="step-num">03</div>
+            <div class="step-body">
+              <h3>Foto pakai flash dari atas</h3>
+              <p>Letakkan HP setinggi paha menghadap ke bawah. <b>Wajib gunakan flash</b>.</p>
+            </div>
+            <div class="step-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" />
+                <circle cx="12" cy="13" r="4" />
+              </svg>
+            </div>
+          </li>
+        </ul>
+
+        <div class="reveal d5" style="margin-bottom: 16px;">
+          <button class="btn terracotta" onclick="goTo('kamera')">
+            Mulai ukur
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M5 12h14M13 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+        <div class="reveal d6">
+          <button class="btn ghost" onclick="document.getElementById('fileInput').click()"
+            style="font-size: 14px; padding: 12px;">
+            Atau unggah foto yang sudah ada
+          </button>
+          <input type="file" id="fileInput" accept="image/*"
+            onchange="handleUpload(this.files[0]);" />
+        </div>
+      </div>
+
+      <!-- ============================================ -->
+      <!-- SCREEN 2: KAMERA -->
+      <!-- ============================================ -->
+      <div class="screen" id="screen-kamera">
+        <div class="kamera-top">
+          <button class="icon-btn" onclick="goTo('panduan')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M15 18l-6-6 6-6" />
+            </svg>
+          </button>
+          <span class="kamera-label">Modus Pengukuran</span>
+          <button class="icon-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="4" />
+              <path
+                d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+            </svg>
+          </button>
+        </div>
+
+        <div class="viewfinder">
+          <div class="mock-scene">
+            <div class="mock-floor"></div>
+            <div class="mock-card"></div>
+            <svg class="mock-foot" viewBox="0 0 240 360" fill="none"
+              style="--foot-fill: rgba(245,239,228,0.22); --foot-shadow: rgba(245,239,228,0.15); --foot-shadow-opacity: 1; --foot-crease: rgba(245,239,228,0.6);">
+              <use href="#foot-sole" />
+              <!-- Detection landmarks: big toe tip, heel, lateral arch, medial widest -->
+              <circle cx="190" cy="40" r="5" fill="#D26A4C" />
+              <circle cx="118" cy="346" r="5" fill="#D26A4C" />
+              <circle cx="52" cy="240" r="5" fill="#D26A4C" />
+              <circle cx="194" cy="130" r="5" fill="#D26A4C" />
+            </svg>
+          </div>
+
+          <div class="bracket tl"></div>
+          <div class="bracket tr"></div>
+          <div class="bracket bl"></div>
+          <div class="bracket br"></div>
+
+          <div class="scan-line"></div>
+
+          <div class="detect-pill">
+            <span class="dot-pulse"></span>
+            Kartu terdeteksi
+          </div>
+        </div>
+
+        <div class="kamera-bottom">
+          <button class="kamera-side-btn" onclick="document.getElementById('fileInput2').click()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2" />
+              <circle cx="9" cy="9" r="2" />
+              <path d="M21 15l-5-5L5 21" />
+            </svg>
+          </button>
+          <input type="file" id="fileInput2" accept="image/*"
+            onchange="handleUpload(this.files[0]);" />
+
+          <div class="shutter-wrap">
+            <button class="shutter" onclick="document.getElementById('fileCamera').click();"></button>
+          </div>
+          <input type="file" id="fileCamera" accept="image/*" capture="environment"
+            onchange="handleUpload(this.files[0]);" style="display:none;" />
+
+          <button class="kamera-side-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="1 4 1 10 7 10" />
+              <path d="M3.51 15a9 9 0 102.13-9.36L1 10" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- ============================================ -->
+      <!-- SCREEN 3: LOADING -->
+      <!-- ============================================ -->
+      <div class="screen" id="screen-loading">
+        <div class="loading-inner">
+          <div class="loading-art">
+            <div class="ring"></div>
+            <div class="ring spin"></div>
+            <div class="inner-circle">
+              <svg class="foot-mini" viewBox="0 0 240 360" fill="none"
+                style="--foot-fill: #F4C9A8; --foot-shadow: #E8A57D; --foot-shadow-opacity: 0.55; --foot-crease: #D88A60;">
+                <use href="#foot-sole" />
+              </svg>
+              <div class="scan-bar"></div>
+            </div>
+          </div>
+
+          <div class="eyebrow" style="margin-bottom: 10px;">Sedang memproses</div>
+          <h2 class="title" style="margin-bottom: 30px;">Tunggu sebentar...</h2>
+
+          <ol class="loading-steps" id="loadingSteps">
+            <li class="loading-step current" data-step="1">
+              <span class="check">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              </span>
+              Mendeteksi kartu referensi
+            </li>
+            <li class="loading-step" data-step="2">
+              <span class="check">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              </span>
+              Memisahkan kaki dari latar
+            </li>
+            <li class="loading-step" data-step="3">
+              <span class="check">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              </span>
+              Menghitung dimensi
+            </li>
+          </ol>
+        </div>
+      </div>
+
+      <!-- ============================================ -->
+      <!-- SCREEN 4: HASIL -->
+      <!-- ============================================ -->
+      <div class="screen" id="screen-hasil">
+        <div class="hasil-top reveal d1">
+          <button class="hasil-icon-btn" onclick="goTo('panduan')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M15 18l-6-6 6-6" />
+            </svg>
+          </button>
+          <span class="micro">Hasil Pengukuran</span>
+          <button class="hasil-icon-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="18" cy="5" r="3" />
+              <circle cx="6" cy="12" r="3" />
+              <circle cx="18" cy="19" r="3" />
+              <line x1="8.6" y1="13.5" x2="15.4" y2="17.5" />
+              <line x1="15.4" y1="6.5" x2="8.6" y2="10.5" />
+            </svg>
+          </button>
+        </div>
+
+        <div class="hasil-hero reveal d2">
+          <div class="eyebrow">Bentuk kakimu</div>
+          <h2 id="hasil-klasifikasi">Klasifikasi:<br><em>Wide‑Fit</em></h2>
+          <p class="subtitle" id="hasil-subtitle">Kakimu sedikit lebih lebar dari rata‑rata. Cari sepatu dengan <em>toe‑box</em> luas.</p>
+        </div>
+
+        <div class="preview-card reveal d3">
+          <div class="preview-img">
+            <img id="hasil-img" src="imgs/mock_result.png" alt="Foto Hasil Pengukuran"
+              style="width: 100%; height: 260px; object-fit: cover; border-bottom: 2px solid var(--ink); display: block;" />
+          </div>
+          <div class="preview-meta">
+            <span>Output Segmentasi</span>
+          </div>
+        </div>
+
+        <div class="metrics reveal d4">
+          <div class="metric">
+            <div class="label">Panjang</div>
+            <div class="value" id="hasil-panjang">256.4<span class="unit">mm</span></div>
+          </div>
+          <div class="metric">
+            <div class="label">Lebar</div>
+            <div class="value" id="hasil-lebar">102.7<span class="unit">mm</span></div>
+          </div>
+          <div class="metric ratio">
+            <div>
+              <div class="label" style="color: var(--ink-2);">Rasio L/P</div>
+              <div class="value" id="hasil-rasio">0.40</div>
+            </div>
+            <div class="right-side">
+              <div class="micro" style="color: var(--ink-2);">Threshold</div>
+              <span class="tag">≥ 0.38 = Wide</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="sizes reveal d5" id="hasil-sizes-block">
+          <h3>Rekomendasi Ukuran Umum</h3>
+          <p class="sub">Berdasarkan panjang kakimu (256.4 mm)</p>
+          <div class="size-grid">
+            <div class="size-box">
+              <div class="region">EU</div>
+              <div class="size">41</div>
+            </div>
+            <div class="size-box">
+              <div class="region">US</div>
+              <div class="size">8.5</div>
+            </div>
+            <div class="size-box">
+              <div class="region">UK</div>
+              <div class="size">7.5</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="actions reveal d6">
+          <button class="btn terracotta">
+            Simpan hasil
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
+              <polyline points="17 21 17 13 7 13 7 21" />
+              <polyline points="7 3 7 8 15 8" />
+            </svg>
+          </button>
+          <button class="btn ghost" onclick="goTo('panduan')">
+            Ukur lagi
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="home-indicator"></div>
+  </div>
+
+  <script>
+    const BRAND_SIZES = {
+      nike: { men: [
+        {cm:22.5,eu:36,us:"4",uk:"3.5"},{cm:23.0,eu:37,us:"5",uk:"4.5"},
+        {cm:24.0,eu:38,us:"6",uk:"5.5"},{cm:25.0,eu:39,us:"7",uk:"6"},
+        {cm:25.5,eu:40,us:"7.5",uk:"6.5"},{cm:26.0,eu:41,us:"8",uk:"7"},
+        {cm:26.5,eu:42,us:"8.5",uk:"7.5"},{cm:27.5,eu:43,us:"9.5",uk:"8.5"},
+        {cm:28.0,eu:44,us:"10",uk:"9"},{cm:29.0,eu:45,us:"11",uk:"10"},
+        {cm:29.5,eu:46,us:"11.5",uk:"10.5"}
+      ]},
+      adidas: { men: [
+        {cm:22.0,eu:36,us:"4",uk:"3.5"},{cm:22.5,eu:37,us:"4.5",uk:"4"},
+        {cm:23.5,eu:38,us:"5.5",uk:"5"},{cm:24.0,eu:39,us:"6",uk:"5.5"},
+        {cm:25.0,eu:40,us:"7",uk:"6.5"},{cm:25.5,eu:41,us:"7.5",uk:"7"},
+        {cm:26.5,eu:42,us:"8.5",uk:"8"},{cm:27.0,eu:43,us:"9",uk:"8.5"},
+        {cm:27.5,eu:44,us:"9.5",uk:"9"},{cm:28.5,eu:45,us:"10.5",uk:"10"},
+        {cm:29.5,eu:46,us:"11.5",uk:"11"}
+      ]},
+      puma: { men: [
+        {cm:22.5,eu:36,us:"4",uk:"3.5"},{cm:23.0,eu:37,us:"5",uk:"4.5"},
+        {cm:23.5,eu:38,us:"6",uk:"5"},{cm:24.5,eu:39,us:"7",uk:"6"},
+        {cm:25.0,eu:40,us:"7.5",uk:"6.5"},{cm:25.5,eu:41,us:"8",uk:"7"},
+        {cm:26.5,eu:42,us:"9",uk:"8"},{cm:27.0,eu:43,us:"9.5",uk:"8.5"},
+        {cm:27.5,eu:44,us:"10",uk:"9"},{cm:28.5,eu:45,us:"11",uk:"10"},
+        {cm:29.0,eu:46,us:"11.5",uk:"10.5"}
+      ]},
+      newbalance: { men: [
+        {cm:22.5,eu:36,us:"4",uk:"3.5"},{cm:23.0,eu:37,us:"5",uk:"4.5"},
+        {cm:23.5,eu:38,us:"5.5",uk:"5"},{cm:24.5,eu:39,us:"7",uk:"6"},
+        {cm:25.0,eu:40,us:"7.5",uk:"6.5"},{cm:25.5,eu:41,us:"8",uk:"7.5"},
+        {cm:26.5,eu:42,us:"9",uk:"8.5"},{cm:27.0,eu:43,us:"9.5",uk:"9"},
+        {cm:27.5,eu:44,us:"10",uk:"9.5"},{cm:28.5,eu:45,us:"11",uk:"10.5"},
+        {cm:29.0,eu:46,us:"11.5",uk:"11"}
+      ]},
+      converse: { men: [
+        {cm:22.5,eu:36,us:"4",uk:"3.5"},{cm:23.5,eu:37,us:"5",uk:"4.5"},
+        {cm:24.0,eu:38,us:"6",uk:"5.5"},{cm:24.5,eu:39,us:"7",uk:"6"},
+        {cm:25.0,eu:40,us:"7.5",uk:"6.5"},{cm:26.0,eu:41,us:"8",uk:"7.5"},
+        {cm:26.5,eu:42,us:"8.5",uk:"8"},{cm:27.0,eu:43,us:"9",uk:"8.5"},
+        {cm:27.5,eu:44,us:"10",uk:"9"},{cm:29.0,eu:45,us:"11",uk:"10"},
+        {cm:29.5,eu:46,us:"12",uk:"11"}
+      ]}
+    };
+
+    const BRAND_LABELS = {
+      nike:'Nike', adidas:'Adidas', puma:'Puma',
+      newbalance:'New Balance', converse:'Converse'
+    };
+
+    function lookupBrandSizes(cm) {
+      return Object.entries(BRAND_SIZES).map(([key, data]) => {
+        const table = data.men;
+        const best = table.reduce((a, b) =>
+          Math.abs(b.cm - cm) < Math.abs(a.cm - cm) ? b : a
+        );
+        return { brand: BRAND_LABELS[key], eu: best.eu, us: best.us, uk: best.uk };
+      });
+    }
+
+    function showError(msg) {
+      alert('❌ ' + msg);
+      goTo('kamera');
+    }
+
+    function renderResult(data) {
+      const lenMm = data.length_mm;
+      const widMm = data.width_mm;
+      const ratio = data.ratio;
+      const isWide = ratio > 0.42;
+
+      const img = document.getElementById('hasil-img');
+      if (img) img.src = 'data:image/jpeg;base64,' + data.image_base64;
+
+      const h2 = document.getElementById('hasil-klasifikasi');
+      const sub = document.getElementById('hasil-subtitle');
+      if (isWide) {
+        if (h2) h2.innerHTML = 'Klasifikasi:<br><em>Wide‑Fit</em>';
+        if (sub) sub.innerHTML = 'Kakimu lebih lebar dari rata‑rata. Cari sepatu dengan <em>toe‑box</em> luas.';
+      } else {
+        if (h2) h2.innerHTML = 'Klasifikasi:<br><em>Standard‑Fit</em>';
+        if (sub) sub.innerHTML = 'Ukuran kakimu tergolong normal. Sepatu standar akan cocok untukmu.';
+      }
+
+      const elP = document.getElementById('hasil-panjang');
+      const elL = document.getElementById('hasil-lebar');
+      const elR = document.getElementById('hasil-rasio');
+      if (elP) elP.innerHTML = lenMm.toFixed(1) + '<span class="unit">mm</span>';
+      if (elL) elL.innerHTML = widMm.toFixed(1) + '<span class="unit">mm</span>';
+      if (elR) elR.textContent = ratio.toFixed(2);
+
+      const block = document.getElementById('hasil-sizes-block');
+      if (block) {
+        const brands = lookupBrandSizes(lenMm / 10);
+        const rows = brands.map(b =>
+          '<div style="display:flex;align-items:center;justify-content:space-between;' +
+          'padding:10px 0;border-bottom:1px solid var(--cream-2);">' +
+          '<span style="font-weight:600;font-size:13px;">' + b.brand + '</span>' +
+          '<span style="font-size:12px;color:var(--muted);">EU <strong style="color:var(--ink)">' +
+          b.eu + '</strong>&nbsp;|&nbsp;US <strong style="color:var(--ink)">' +
+          b.us + '</strong>&nbsp;|&nbsp;UK <strong style="color:var(--ink)">' +
+          b.uk + '</strong></span></div>'
+        ).join('');
+        block.innerHTML =
+          '<h3>Rekomendasi Ukuran per Brand</h3>' +
+          '<p class="sub">Berdasarkan panjang kakimu (' + lenMm.toFixed(1) + ' mm)</p>' +
+          '<div style="margin-top:12px;">' + rows + '</div>';
+      }
+    }
+
+    async function handleUpload(file) {
+      if (!file) return;
+      goTo('loading');
+      const fd = new FormData();
+      fd.append('file', file);
+      try {
+        const res = await fetch('/measure', { method: 'POST', body: fd });
+        const json = await res.json();
+        if (json.status === 'success') {
+          renderResult(json.data);
+          goTo('hasil');
+        } else {
+          showError(json.message || 'Gagal memproses gambar. Coba lagi.');
+        }
+      } catch (e) {
+        showError('Tidak dapat terhubung ke server. Periksa koneksi internet kamu.');
+      }
+    }
+  </script>
+
+  <script>
+    const screens = ['panduan', 'kamera', 'loading', 'hasil'];
+    let currentScreen = 'panduan';
+
+    function goTo(name) {
+      const cur = document.getElementById('screen-' + currentScreen);
+      const next = document.getElementById('screen-' + name);
+      if (!next) return;
+      cur.classList.remove('active');
+      next.classList.add('active');
+      currentScreen = name;
+
+      // Status bar color
+      const statusBar = document.getElementById('statusBar');
+      const homeIndicator = document.querySelector('.home-indicator');
+      if (name === 'kamera') {
+        statusBar.style.color = '#F5EFE4';
+        homeIndicator.style.background = '#F5EFE4';
+      } else {
+        statusBar.style.color = '#1A1814';
+        homeIndicator.style.background = '#1A1814';
+      }
+
+      // Re-trigger reveal animations
+      next.querySelectorAll('.reveal').forEach(el => {
+        el.style.animation = 'none';
+        el.offsetHeight;
+        el.style.animation = '';
+      });
+
+      // Loading screen progression
+      if (name === 'loading') {
+        runLoading();
+      }
+    }
+
+    function runLoading() {
+      const steps = document.querySelectorAll('#loadingSteps .loading-step');
+      steps.forEach(s => { s.classList.remove('active', 'current'); });
+      steps[0].classList.add('current');
+
+      setTimeout(() => {
+        steps[0].classList.remove('current');
+        steps[0].classList.add('active');
+        steps[1].classList.add('current');
+      }, 1000);
+
+      setTimeout(() => {
+        steps[1].classList.remove('current');
+        steps[1].classList.add('active');
+        steps[2].classList.add('current');
+      }, 2100);
+
+      setTimeout(() => {
+        steps[2].classList.remove('current');
+        steps[2].classList.add('active');
+      }, 3000);
+    }
+  </script>
+
+</body>
+
+</html>

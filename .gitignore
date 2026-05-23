@@ -1,11 +1,15 @@
-.jpg
-.jpeg
-.JPG
-.png
+*.jpg
+*.jpeg
+*.JPG
+*.png
 
-__pycache__
-.pyc
+__pycache__/
+*.pyc
+*.pyo
 
-venv
-.venv
-env
+venv/
+.venv/
+env/
+
+*.egg-info/
+.DS_Store
