@@ -1132,8 +1132,7 @@
          Colors via CSS custom props:
          --foot-fill (skin base), --foot-shadow (arch shadow), --foot-crease (toe creases) -->
       <symbol id="foot-sole" viewBox="0 0 240 360">
-        <image href="imgs/foot.png" x="20" y="20" width="200" height="320" preserveAspectRatio="xMidYMid meet"
-          opacity="0.4" />
+        <ellipse cx="120" cy="180" rx="80" ry="160" fill="var(--foot-fill)" opacity="0.4" />
       </symbol>
     </defs>
   </svg>
@@ -1420,8 +1419,8 @@
 
         <div class="preview-card reveal d3">
           <div class="preview-img">
-            <img id="hasil-img" src="imgs/mock_result.png" alt="Foto Hasil Pengukuran"
-              style="width: 100%; height: 260px; object-fit: cover; border-bottom: 2px solid var(--ink); display: block;" />
+            <img id="hasil-img" src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%2F%3E" alt="Foto Hasil Pengukuran"
+              style="width: 100%; height: 260px; object-fit: cover; border-bottom: 2px solid var(--ink); display: block; background: var(--cream-2);" />
           </div>
           <div class="preview-meta">
             <span>Output Segmentasi</span>

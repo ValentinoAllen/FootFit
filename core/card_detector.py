@@ -12,7 +12,7 @@ ASPECT_MAX = 1.85
 
 def _try_match_card_contour(contours, total_image_area, tag=""):
     """Iterasi kontur, log alasan rejection, return kontur kartu pertama yang lolos."""
-    print(f"[card_detector:{tag}] found {len(contours)} contours, checking top 10")
+    print(f"[card_detector:{tag}] found {len(contours)} contours, checking top 10", flush=True)
     contours = sorted(contours, key=cv2.contourArea, reverse=True)[:10]
 
     for idx, c in enumerate(contours):
@@ -20,13 +20,13 @@ def _try_match_card_contour(contours, total_image_area, tag=""):
         area_ratio = contour_area / total_image_area
 
         if area_ratio < AREA_MIN_RATIO or area_ratio > AREA_MAX_RATIO:
-            print(f"[card_detector:{tag}]  #{idx} reject: area {area_ratio:.4f} outside [{AREA_MIN_RATIO}, {AREA_MAX_RATIO}]")
+            print(f"[card_detector:{tag}]  #{idx} reject: area {area_ratio:.4f} outside [{AREA_MIN_RATIO}, {AREA_MAX_RATIO}]", flush=True)
             continue
 
         rect = cv2.minAreaRect(c)
         (x, y), (w, h), angle = rect
         if w == 0 or h == 0:
-            print(f"[card_detector:{tag}]  #{idx} reject: zero w/h")
+            print(f"[card_detector:{tag}]  #{idx} reject: zero w/h", flush=True)
             continue
 
         box_area = w * h
@@ -34,11 +34,11 @@ def _try_match_card_contour(contours, total_image_area, tag=""):
         aspect_ratio = max(w, h) / min(w, h)
 
         if extent < EXTENT_MIN:
-            print(f"[card_detector:{tag}]  #{idx} reject: extent {extent:.3f} < {EXTENT_MIN}")
+            print(f"[card_detector:{tag}]  #{idx} reject: extent {extent:.3f} < {EXTENT_MIN}", flush=True)
             continue
 
         if not (ASPECT_MIN < aspect_ratio < ASPECT_MAX):
-            print(f"[card_detector:{tag}]  #{idx} reject: aspect {aspect_ratio:.3f} outside [{ASPECT_MIN}, {ASPECT_MAX}]")
+            print(f"[card_detector:{tag}]  #{idx} reject: aspect {aspect_ratio:.3f} outside [{ASPECT_MIN}, {ASPECT_MAX}]", flush=True)
             continue
 
         # Kartu match
@@ -56,21 +56,21 @@ def _try_match_card_contour(contours, total_image_area, tag=""):
         tr = [tr[0] + padding, tr[1] - padding]
         bl = [bl[0] - padding, bl[1] + padding]
 
-        print(f"[card_detector:{tag}]  #{idx} MATCH: area={area_ratio:.4f}, extent={extent:.3f}, aspect={aspect_ratio:.3f}")
+        print(f"[card_detector:{tag}]  #{idx} MATCH: area={area_ratio:.4f}, extent={extent:.3f}, aspect={aspect_ratio:.3f}", flush=True)
         return np.array([tl, tr, br, bl], dtype="int32")
 
-    print(f"[card_detector:{tag}] no contour passed all filters")
+    print(f"[card_detector:{tag}] no contour passed all filters", flush=True)
     return None
 
 
 def process_reference_object_robust(image_path):
     image = cv2.imread(image_path)
     if image is None:
-        print(f"[card_detector:robust] cv2.imread FAILED for {image_path}")
+        print(f"[card_detector:robust] cv2.imread FAILED for {image_path}", flush=True)
         return None, None
 
     original_h, original_w = image.shape[:2]
-    print(f"[card_detector:robust] image loaded: {image.shape}")
+    print(f"[card_detector:robust] image loaded: {image.shape}", flush=True)
 
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
@@ -99,11 +99,11 @@ def process_reference_object_robust(image_path):
 def process_reference_object_hardcore(image_path):
     original_image = cv2.imread(image_path)
     if original_image is None:
-        print(f"[card_detector:hardcore] cv2.imread FAILED for {image_path}")
+        print(f"[card_detector:hardcore] cv2.imread FAILED for {image_path}", flush=True)
         return None, None
 
     orig_h, orig_w = original_image.shape[:2]
-    print(f"[card_detector:hardcore] image loaded: {original_image.shape}")
+    print(f"[card_detector:hardcore] image loaded: {original_image.shape}", flush=True)
 
     # DOWNSCALING
     process_width = 800

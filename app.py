@@ -21,6 +21,7 @@ app = FastAPI(title="FootFit API")
 def _preprocess_upload(contents: bytes) -> str:
     """Load gambar (HEIC/JPEG/PNG), apply EXIF rotation, resize, save as JPEG temp file."""
     img = Image.open(BytesIO(contents))
+    print(f"[app] PIL opened: format={img.format}, mode={img.mode}, size={img.size}", flush=True)
     img = ImageOps.exif_transpose(img)
     if img.mode != "RGB":
         img = img.convert("RGB")
@@ -29,6 +30,7 @@ def _preprocess_upload(contents: bytes) -> str:
     tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".jpg")
     img.save(tmp.name, format="JPEG", quality=92)
     tmp.close()
+    print(f"[app] preprocessed: final_size={img.size}, saved={tmp.name}", flush=True)
     return tmp.name
 
 
@@ -43,6 +45,7 @@ async def measure(file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail="File harus berupa gambar.")
 
     contents = await file.read()
+    print(f"[app] upload: content_type={file.content_type}, size={len(contents)}B, filename={file.filename}", flush=True)
     if len(contents) > 15 * 1024 * 1024:
         raise HTTPException(status_code=400, detail="Ukuran gambar maksimal 15 MB.")
 
@@ -51,7 +54,7 @@ async def measure(file: UploadFile = File(...)):
         try:
             tmp_path = _preprocess_upload(contents)
         except Exception as e:
-            print(f"[app] preprocess failed: {e}")
+            print(f"[app] preprocess failed: {e}", flush=True)
             return JSONResponse(
                 status_code=422,
                 content={"status": "error", "message": "Format gambar tidak dikenali atau file rusak."},
@@ -59,7 +62,7 @@ async def measure(file: UploadFile = File(...)):
 
         result = process_foot_measurement(tmp_path)
     except Exception as e:
-        print(f"[app] CV pipeline crashed: {e}")
+        print(f"[app] CV pipeline crashed: {e}", flush=True)
         return JSONResponse(
             status_code=500,
             content={"status": "error", "message": "Terjadi kesalahan internal saat memproses gambar."},

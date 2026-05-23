@@ -8,9 +8,12 @@ def process_foot_measurement(image_path: str) -> dict:
     Fungsi utama untuk dipanggil oleh endpoint API (misal: FastAPI / Flask).
     Mengembalikan dictionary berisi status, ukuran, dan gambar Base64.
     """
+    print(f"[main] start measurement: {image_path}", flush=True)
+
     # Deteksi Kartu & Warping
     warped_image, ppm = detect_and_warp_card(image_path)
-    
+    print(f"[main] card detection: warped={warped_image is not None}, ppm={ppm}", flush=True)
+
     if warped_image is None:
         return {
             "status": "error",
@@ -19,7 +22,8 @@ def process_foot_measurement(image_path: str) -> dict:
 
     # MODUL 2: Segmentasi K-Means & GrabCut
     result_img, foot_dimensions = extract_foot_grabcut(warped_image)
-    
+    print(f"[main] foot segmentation: result_img={result_img is not None}, dims={foot_dimensions}", flush=True)
+
     if result_img is None:
         return {
             "status": "error",
