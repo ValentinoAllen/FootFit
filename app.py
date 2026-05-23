@@ -1,17 +1,18 @@
 import os
 import tempfile
+from pathlib import Path
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.responses import JSONResponse, FileResponse
-from fastapi.staticfiles import StaticFiles
 
 from main import process_foot_measurement
 
+BASE_DIR = Path(__file__).parent
 app = FastAPI(title="FootFit API")
 
 
 @app.get("/")
 async def root():
-    return FileResponse("footfit.html")
+    return FileResponse(BASE_DIR / "footfit.html")
 
 
 @app.post("/measure")
@@ -46,6 +47,3 @@ async def measure(file: UploadFile = File(...)):
 
     return JSONResponse(content=result)
 
-
-# Static files mount SETELAH semua route API agar /measure tetap prioritas
-app.mount("/", StaticFiles(directory=".", html=True), name="static")
