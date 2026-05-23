@@ -14,7 +14,7 @@ def process_foot_measurement(image_path: str) -> dict:
     if warped_image is None:
         return {
             "status": "error",
-            "message": "Gagal mendeteksi kartu referensi pada gambar."
+            "message": "Gagal mendeteksi kartu referensi. Pastikan kartu (KTP/ATM) terlihat utuh, kontras dengan lantai, dan tidak diletakkan miring."
         }
 
     # MODUL 2: Segmentasi K-Means & GrabCut
