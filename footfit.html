@@ -1438,12 +1438,12 @@
           </div>
           <div class="metric ratio">
             <div>
-              <div class="label" style="color: var(--ink-2);">Rasio L/P</div>
-              <div class="value" id="hasil-rasio">0.40</div>
+              <div class="label" style="color: var(--ink-2);">Foot Index</div>
+              <div class="value" id="hasil-rasio">40.00%</div>
             </div>
             <div class="right-side">
               <div class="micro" style="color: var(--ink-2);">Threshold</div>
-              <span class="tag">≥ 0.38 = Wide</span>
+              <span class="tag">N &lt;37.71% · W ≥42.17%</span>
             </div>
           </div>
         </div>
@@ -1554,28 +1554,36 @@
     function renderResult(data) {
       const lenMm = data.length_mm;
       const widMm = data.width_mm;
-      const ratio = data.ratio;
-      const isWide = ratio > 0.42;
+      const fiPercent = (typeof data.fi_percent === 'number')
+        ? data.fi_percent
+        : data.ratio * 100;
+      const fitCategory = data.fit_category || (
+        fiPercent < 37.71 ? 'narrow' : (fiPercent < 42.17 ? 'normal' : 'wide')
+      );
+      const fitLabel = data.fit_label || ({
+        narrow: 'Narrow-Fit', normal: 'Normal-Fit', wide: 'Wide-Fit'
+      })[fitCategory];
 
       const img = document.getElementById('hasil-img');
       if (img) img.src = 'data:image/jpeg;base64,' + data.image_base64;
 
+      const COPY = {
+        narrow: 'Kakimu lebih ramping dari rata‑rata. Cari sepatu dengan <em>toe‑box</em> sempit atau snug fit.',
+        normal: 'Ukuran kakimu tergolong normal. Sepatu standar akan cocok untukmu.',
+        wide:   'Kakimu lebih lebar dari rata‑rata. Cari sepatu dengan <em>toe‑box</em> luas.'
+      };
+
       const h2 = document.getElementById('hasil-klasifikasi');
       const sub = document.getElementById('hasil-subtitle');
-      if (isWide) {
-        if (h2) h2.innerHTML = 'Klasifikasi:<br><em>Wide‑Fit</em>';
-        if (sub) sub.innerHTML = 'Kakimu lebih lebar dari rata‑rata. Cari sepatu dengan <em>toe‑box</em> luas.';
-      } else {
-        if (h2) h2.innerHTML = 'Klasifikasi:<br><em>Standard‑Fit</em>';
-        if (sub) sub.innerHTML = 'Ukuran kakimu tergolong normal. Sepatu standar akan cocok untukmu.';
-      }
+      if (h2)  h2.innerHTML  = 'Klasifikasi:<br><em>' + fitLabel + '</em>';
+      if (sub) sub.innerHTML = COPY[fitCategory] || COPY.normal;
 
       const elP = document.getElementById('hasil-panjang');
       const elL = document.getElementById('hasil-lebar');
       const elR = document.getElementById('hasil-rasio');
       if (elP) elP.innerHTML = lenMm.toFixed(1) + '<span class="unit">mm</span>';
       if (elL) elL.innerHTML = widMm.toFixed(1) + '<span class="unit">mm</span>';
-      if (elR) elR.textContent = ratio.toFixed(2);
+      if (elR) elR.textContent = fiPercent.toFixed(2) + '%';
 
       const block = document.getElementById('hasil-sizes-block');
       if (block) {
