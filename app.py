@@ -5,6 +5,7 @@ from pathlib import Path
 
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.responses import JSONResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 from PIL import Image, ImageOps
 from pillow_heif import register_heif_opener
 
@@ -16,6 +17,9 @@ BASE_DIR = Path(__file__).parent
 MAX_DIMENSION = 2000
 
 app = FastAPI(title="FootFit API")
+
+# Serve static image assets (foot guide overlay, etc.) at /imgs/<filename>
+app.mount("/imgs", StaticFiles(directory=BASE_DIR / "imgs"), name="imgs")
 
 
 def _preprocess_upload(contents: bytes) -> str:

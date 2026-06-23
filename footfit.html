@@ -425,25 +425,34 @@
       border: 1px solid rgba(245, 239, 228, 0.15);
     }
 
-    /* Mock scene */
-    .mock-scene {
+    /* Live camera feed */
+    .cam-feed {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      background: #000;
+    }
+
+    /* Placement guide overlay (template, not detection) */
+    .measure-guide {
       position: absolute;
       inset: 0;
       display: grid;
       place-items: center;
+      opacity: 0.32;
+      pointer-events: none;
     }
 
-    .mock-floor {
-      position: absolute;
-      inset: 0;
-      background:
-        linear-gradient(180deg, #3a3328 0%, #2a2419 100%);
-      background-image:
-        repeating-linear-gradient(100deg,
-          transparent 0,
-          transparent 28px,
-          rgba(245, 239, 228, 0.04) 28px,
-          rgba(245, 239, 228, 0.04) 30px);
+    .foot-guide {
+      width: 170px;
+      height: 260px;
+      margin-top: 30px;
+      margin-left: -30px;
+      object-fit: contain;
+      /* black line-art PNG → light strokes legible over the dark camera feed */
+      filter: invert(1) drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
     }
 
     .mock-card {
@@ -456,6 +465,7 @@
       border-radius: 6px;
       transform: perspective(400px) rotateX(10deg);
       box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+      opacity: 0.3;
     }
 
     .mock-card::before {
@@ -478,14 +488,6 @@
       height: 14px;
       background: linear-gradient(135deg, #d4af37, #b8941f);
       border-radius: 3px;
-    }
-
-    .mock-foot {
-      position: relative;
-      width: 170px;
-      height: 260px;
-      margin-top: 30px;
-      margin-left: -30px;
     }
 
     /* Detection brackets */
@@ -568,7 +570,7 @@
     .dot-pulse {
       width: 8px;
       height: 8px;
-      background: #4ade80;
+      background: var(--butter);
       border-radius: 50%;
       animation: pulse 1.4s ease-in-out infinite;
     }
@@ -814,6 +816,22 @@
     /* ===== SCREEN 4: HASIL ===== */
     #screen-hasil {
       padding-bottom: 24px;
+    }
+
+    #hasil-capture {
+      background: var(--paper);
+      padding: 4px 0 14px;
+    }
+
+    /* Export-only caption (visible in saved PNG so it's self-explanatory) */
+    .hasil-brandmark {
+      text-align: center;
+      font-family: 'Geist Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: 14px 24px 0;
     }
 
     .hasil-top {
@@ -1286,18 +1304,16 @@
         </div>
 
         <div class="viewfinder">
-          <div class="mock-scene">
-            <div class="mock-floor"></div>
+          <!-- Live camera feed (bottom layer) -->
+          <video class="cam-feed" id="camFeed" autoplay playsinline muted></video>
+          <canvas id="capCanvas" style="display:none;"></canvas>
+
+          <!-- Placement guide (template, NOT detection) -->
+          <div class="measure-guide" aria-hidden="true">
+            <img class="foot-guide"
+              src="/imgs/foot-top-view-SVG.png"
+              alt="" />
             <div class="mock-card"></div>
-            <svg class="mock-foot" viewBox="0 0 240 360" fill="none"
-              style="--foot-fill: rgba(245,239,228,0.22); --foot-shadow: rgba(245,239,228,0.15); --foot-shadow-opacity: 1; --foot-crease: rgba(245,239,228,0.6);">
-              <use href="#foot-sole" />
-              <!-- Detection landmarks: big toe tip, heel, lateral arch, medial widest -->
-              <circle cx="190" cy="40" r="5" fill="#D26A4C" />
-              <circle cx="118" cy="346" r="5" fill="#D26A4C" />
-              <circle cx="52" cy="240" r="5" fill="#D26A4C" />
-              <circle cx="194" cy="130" r="5" fill="#D26A4C" />
-            </svg>
           </div>
 
           <div class="bracket tl"></div>
@@ -1307,9 +1323,9 @@
 
           <div class="scan-line"></div>
 
-          <div class="detect-pill">
+          <div class="detect-pill" id="detectPill">
             <span class="dot-pulse"></span>
-            Kartu terdeteksi
+            Posisikan kaki &amp; kartu
           </div>
         </div>
 
@@ -1325,7 +1341,7 @@
             onchange="handleUpload(this.files[0]);" />
 
           <div class="shutter-wrap">
-            <button class="shutter" onclick="document.getElementById('fileCamera').click();"></button>
+            <button class="shutter" onclick="captureFrame();" aria-label="Ambil foto"></button>
           </div>
           <input type="file" id="fileCamera" accept="image/*" capture="environment"
             onchange="handleUpload(this.files[0]);" style="display:none;" />
@@ -1410,6 +1426,7 @@
           </button>
         </div>
 
+        <div id="hasil-capture">
         <div class="hasil-hero reveal d2">
           <div class="eyebrow">Bentuk kakimu</div>
           <h2 id="hasil-klasifikasi">Klasifikasi:<br><em>Wide‑Fit</em></h2>
@@ -1466,9 +1483,12 @@
           </div>
         </div>
 
+        <div class="hasil-brandmark">FootFit · Pengukuran kaki</div>
+        </div><!-- /#hasil-capture -->
+
         <div class="actions reveal d6">
-          <button class="btn terracotta">
-            Simpan hasil
+          <button class="btn terracotta" onclick="saveResult(this)">
+            <span class="btn-label">Simpan hasil</span>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
               <polyline points="17 21 17 13 7 13 7 21" />
@@ -1485,6 +1505,8 @@
 
     <div class="home-indicator"></div>
   </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
   <script>
     const BRAND_SIZES = {
@@ -1621,16 +1643,123 @@
         showError('Tidak dapat terhubung ke server. Periksa koneksi internet kamu.');
       }
     }
+
+    async function saveResult(btn) {
+      if (typeof html2canvas === 'undefined') {
+        alert('Gagal menyiapkan gambar. Periksa koneksi lalu coba lagi.');
+        return;
+      }
+      const node = document.getElementById('hasil-capture');
+      const label = btn ? btn.querySelector('.btn-label') : null;
+      const original = label ? label.textContent : null;
+      if (btn) { btn.disabled = true; if (label) label.textContent = 'Menyimpan…'; }
+      try {
+        const canvas = await html2canvas(node, {
+          backgroundColor: '#FBF7EE', // var(--paper)
+          scale: Math.min(window.devicePixelRatio || 1, 2) * 2,
+          useCORS: true,
+          logging: false,
+          onclone: (doc) => {
+            // html2canvas clones the DOM, which restarts the .reveal entrance
+            // animation from opacity:0 → forcing the captured state to be visible.
+            doc.querySelectorAll('.reveal').forEach(el => {
+              el.style.animation = 'none';
+              el.style.opacity = '1';
+              el.style.transform = 'none';
+            });
+          }
+        });
+        const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+        const file = new File([blob], 'footfit-hasil.png', { type: 'image/png' });
+
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          try {
+            await navigator.share({
+              files: [file],
+              title: 'Hasil FootFit',
+              text: 'Hasil pengukuran kakiku dengan FootFit'
+            });
+            return; // shared / saved via share sheet
+          } catch (e) {
+            if (e && e.name === 'AbortError') return; // user cancelled
+            // otherwise fall through to download
+          }
+        }
+
+        // Fallback: direct download
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = file.name;
+        a.click();
+        URL.revokeObjectURL(url);
+      } catch (e) {
+        alert('Gagal menyimpan hasil. Coba lagi.');
+      } finally {
+        if (btn) { btn.disabled = false; if (label) label.textContent = original; }
+      }
+    }
   </script>
 
   <script>
     const screens = ['panduan', 'kamera', 'loading', 'hasil'];
     let currentScreen = 'panduan';
 
+    // ===== Live camera =====
+    let camStream = null, camReady = false;
+
+    async function startCamera() {
+      if (camStream) return; // already running
+      try {
+        camStream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: { ideal: 'environment' },
+            width: { ideal: 3840 },
+            height: { ideal: 2160 }
+          },
+          audio: false
+        });
+        const v = document.getElementById('camFeed');
+        v.srcObject = camStream;
+        await v.play();
+        camReady = true;
+      } catch (e) {
+        // Permission denied or unsupported → shutter falls back to native camera
+        camReady = false;
+      }
+    }
+
+    function stopCamera() {
+      if (camStream) {
+        camStream.getTracks().forEach(t => t.stop());
+        camStream = null;
+      }
+      camReady = false;
+    }
+
+    function captureFrame() {
+      if (!camReady) { document.getElementById('fileCamera').click(); return; } // fallback
+      const v = document.getElementById('camFeed');
+      const c = document.getElementById('capCanvas');
+      c.width = v.videoWidth;
+      c.height = v.videoHeight;
+      c.getContext('2d').drawImage(v, 0, 0, c.width, c.height);
+      c.toBlob(b => {
+        if (!b) { document.getElementById('fileCamera').click(); return; }
+        handleUpload(new File([b], 'capture.jpg', { type: 'image/jpeg' }));
+      }, 'image/jpeg', 0.95);
+    }
+
     function goTo(name) {
       const cur = document.getElementById('screen-' + currentScreen);
       const next = document.getElementById('screen-' + name);
       if (!next) return;
+
+      // Release the camera when leaving the measurement screen
+      if (currentScreen === 'kamera' && name !== 'kamera') {
+        stopCamera();
+      }
+
       cur.classList.remove('active');
       next.classList.add('active');
       currentScreen = name;
@@ -1641,6 +1770,7 @@
       if (name === 'kamera') {
         statusBar.style.color = '#F5EFE4';
         homeIndicator.style.background = '#F5EFE4';
+        startCamera();
       } else {
         statusBar.style.color = '#1A1814';
         homeIndicator.style.background = '#1A1814';
