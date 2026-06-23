@@ -18,8 +18,11 @@ MAX_DIMENSION = 2000
 
 app = FastAPI(title="FootFit API")
 
-# Serve static image assets (foot guide overlay, etc.) at /imgs/<filename>
-app.mount("/imgs", StaticFiles(directory=BASE_DIR / "imgs"), name="imgs")
+# Serve static image assets (foot guide overlay, etc.) at /imgs/<filename>.
+# Guarded so a missing assets dir degrades to 404s instead of crashing startup.
+IMGS_DIR = BASE_DIR / "imgs"
+if IMGS_DIR.is_dir():
+    app.mount("/imgs", StaticFiles(directory=IMGS_DIR), name="imgs")
 
 
 def _preprocess_upload(contents: bytes) -> str:

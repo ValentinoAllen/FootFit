@@ -3,6 +3,9 @@
 *.JPG
 *.png
 
+# keep runtime UI assets even though *.png is ignored
+!imgs/foot-top-view-SVG.png
+
 __pycache__/
 *.pyc
 *.pyo
