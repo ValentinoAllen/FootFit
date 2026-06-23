@@ -43,7 +43,13 @@ def _preprocess_upload(contents: bytes) -> str:
 
 @app.get("/")
 async def root():
-    return FileResponse(BASE_DIR / "footfit.html")
+    # no-cache: browser may store but must revalidate (ETag) before use, so a
+    # new deploy of footfit.html is picked up on the next load, not served stale.
+    return FileResponse(
+        BASE_DIR / "footfit.html",
+        media_type="text/html",
+        headers={"Cache-Control": "no-cache"},
+    )
 
 
 @app.post("/measure")
