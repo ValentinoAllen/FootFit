@@ -405,6 +405,12 @@
       height: 18px;
     }
 
+    .icon-btn.is-on {
+      background: var(--paper);
+      color: var(--ink);
+      border-color: var(--paper);
+    }
+
     .kamera-label {
       font-family: 'Geist Mono', monospace;
       font-size: 11px;
@@ -692,6 +698,7 @@
     .loading-art .foot-mini {
       width: 92px;
       height: 138px;
+      object-fit: contain;
     }
 
     .loading-art .scan-bar {
@@ -1294,7 +1301,7 @@
             </svg>
           </button>
           <span class="kamera-label">Modus Pengukuran</span>
-          <button class="icon-btn">
+          <button class="icon-btn" id="flashBtn" onclick="toggleFlash()" aria-pressed="false" aria-label="Nyalakan senter">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="12" cy="12" r="4" />
               <path
@@ -1364,10 +1371,7 @@
             <div class="ring"></div>
             <div class="ring spin"></div>
             <div class="inner-circle">
-              <svg class="foot-mini" viewBox="0 0 240 360" fill="none"
-                style="--foot-fill: #F4C9A8; --foot-shadow: #E8A57D; --foot-shadow-opacity: 0.55; --foot-crease: #D88A60;">
-                <use href="#foot-sole" />
-              </svg>
+              <img class="foot-mini" src="/imgs/foot-top-view-SVG.png" alt="" />
               <div class="scan-bar"></div>
             </div>
           </div>
@@ -1415,15 +1419,7 @@
             </svg>
           </button>
           <span class="micro">Hasil Pengukuran</span>
-          <button class="hasil-icon-btn">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="18" cy="5" r="3" />
-              <circle cx="6" cy="12" r="3" />
-              <circle cx="18" cy="19" r="3" />
-              <line x1="8.6" y1="13.5" x2="15.4" y2="17.5" />
-              <line x1="15.4" y1="6.5" x2="8.6" y2="10.5" />
-            </svg>
-          </button>
+          <span style="width:40px" aria-hidden="true"></span>
         </div>
 
         <div id="hasil-capture">
@@ -1457,7 +1453,7 @@
               <div class="label" style="color: var(--ink-2);">Foot Index</div>
               <div class="value" id="hasil-rasio">40.00%</div>
             </div>
-            <div class="right-side">
+            <div class="right-side" id="hasil-threshold">
               <div class="micro" style="color: var(--ink-2);">Threshold</div>
               <span class="tag">N &lt;37.71% · W ≥42.17%</span>
             </div>
@@ -1599,6 +1595,9 @@
       if (h2)  h2.innerHTML  = 'Klasifikasi:<br><em>' + fitLabel + '</em>';
       if (sub) sub.innerHTML = COPY[fitCategory] || COPY.normal;
 
+      const thr = document.getElementById('hasil-threshold');
+      if (thr) thr.style.display = (fitCategory === 'wide') ? '' : 'none';
+
       const elP = document.getElementById('hasil-panjang');
       const elL = document.getElementById('hasil-lebar');
       const elR = document.getElementById('hasil-rasio');
@@ -1706,7 +1705,33 @@
     let currentScreen = 'panduan';
 
     // ===== Live camera =====
-    let camStream = null, camReady = false;
+    let camStream = null, camReady = false, torchOn = false;
+
+    async function toggleFlash() {
+      const btn = document.getElementById('flashBtn');
+      const track = camStream && camStream.getVideoTracks()[0];
+      if (!camReady || !track) {
+        alert('Senter membutuhkan kamera langsung. Buka layar kamera terlebih dahulu.');
+        return;
+      }
+      const caps = (typeof track.getCapabilities === 'function') ? track.getCapabilities() : {};
+      if (!('torch' in caps)) {
+        alert('Perangkat atau browser ini tidak mendukung senter.');
+        return;
+      }
+      const next = !torchOn;
+      try {
+        await track.applyConstraints({ advanced: [{ torch: next }] });
+        torchOn = next;
+        if (btn) {
+          btn.classList.toggle('is-on', torchOn);
+          btn.setAttribute('aria-pressed', String(torchOn));
+          btn.setAttribute('aria-label', torchOn ? 'Matikan senter' : 'Nyalakan senter');
+        }
+      } catch (e) {
+        alert('Gagal mengubah senter. Coba lagi.');
+      }
+    }
 
     async function startCamera() {
       if (camStream) return; // already running
@@ -1735,6 +1760,13 @@
         camStream = null;
       }
       camReady = false;
+      torchOn = false;
+      const btn = document.getElementById('flashBtn');
+      if (btn) {
+        btn.classList.remove('is-on');
+        btn.setAttribute('aria-pressed', 'false');
+        btn.setAttribute('aria-label', 'Nyalakan senter');
+      }
     }
 
     function captureFrame() {
