@@ -1,12 +1,5 @@
 # FootFit 👟📏
 
-[![Python Version](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.100%2B-009688.svg)](https://fastapi.tiangolo.com/)
-[![OpenCV](https://img.shields.io/badge/OpenCV-4.8%2B-green.svg)](https://opencv.org/)
-[![PyTorch](https://img.shields.io/badge/PyTorch-2.0%2B-ee4c2c.svg)](https://pytorch.org/)
-[![Docker](https://img.shields.io/badge/Docker-Ready-2496ed.svg)](https://www.docker.com/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-
 **FootFit** is an AI-powered Computer Vision system designed to accurately measure human foot dimensions (length, width, arch profile) from standard digital images using reference objects or calibrated camera setups. By bridging the gap between digital foot measurement and brand-specific shoe sizing parameters, FootFit delivers precise shoe size recommendations to minimize size uncertainty in e-commerce applications.
 
 ---
